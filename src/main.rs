@@ -34,40 +34,6 @@ fn setup(mut commands: Commands) {
     commands.insert_resource(map);
 }
 
-fn draw_map(mut commands: Commands, map: Res<CellMap>) {
-    commands
-        .spawn(SpatialBundle::from_transform(Transform::from_xyz(
-            -(map.width as f32 * SPRITE_SIZE) / 2.,
-            -(map.height as f32 * SPRITE_SIZE) / 2.,
-            0.,
-        )))
-        .with_children(|builder| {
-            for y in 0..map.height {
-                for x in 0..map.width {
-                    let cell = if let Some(c) = map.cells.get(&Position::new(x, y)) {
-                        c
-                    } else {
-                        continue;
-                    };
-
-                    builder.spawn((SpriteBundle {
-                        sprite: Sprite {
-                            custom_size: Some(Vec2::splat(SPRITE_SIZE)),
-                            color: cell.element.color(),
-                            ..default()
-                        },
-                        transform: Transform::from_xyz(
-                            SPRITE_SIZE * x as f32,
-                            SPRITE_SIZE * y as f32,
-                            0.,
-                        ),
-                        ..default()
-                    },));
-                }
-            }
-        });
-}
-
 #[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
 struct Position {
     x: i32,
