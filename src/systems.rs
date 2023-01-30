@@ -53,34 +53,26 @@ pub fn process_cells(mut query: Query<&mut Transform>, mut map: ResMut<CellMap>)
         let cell = map.cells.get(&pos).unwrap();
         match cell.element {
             Element::Sand => {
-                let under = IVec2::new(pos.x, pos.y - 1);
-
-                let under_cell = if let Some(v) = map.cells.get(&under) {
-                    v
-                } else {
-                    continue;
+                let next = match map.get_next(&pos) {
+                    Some(v) => v,
+                    None => continue,
+                };
+                let next_cell = match map.cells.get(&next) {
+                    Some(v) => v,
+                    None => continue,
                 };
 
-                match under_cell.element {
-                    Element::Sand => continue,
-                    _ => {}
-                }
-                Vec3::new(SPRITE_SIZE * pos.x as f32, SPRITE_SIZE * pos.y as f32, 0.);
-
                 let mut cell_transform = query.get_component_mut::<Transform>(cell.entity).unwrap();
-                cell_transform.translation = Vec3::new(
-                    SPRITE_SIZE * under.x as f32,
-                    SPRITE_SIZE * under.y as f32,
-                    0.,
-                );
+                cell_transform.translation =
+                    Vec3::new(SPRITE_SIZE * next.x as f32, SPRITE_SIZE * next.y as f32, 0.);
 
                 let mut under_transform = query
-                    .get_component_mut::<Transform>(under_cell.entity)
+                    .get_component_mut::<Transform>(next_cell.entity)
                     .unwrap();
                 under_transform.translation =
                     Vec3::new(SPRITE_SIZE * pos.x as f32, SPRITE_SIZE * pos.y as f32, 0.);
 
-                map.swap(&pos, &under);
+                map.swap(&pos, &next);
             }
             _ => {}
         }
@@ -96,12 +88,16 @@ pub fn draw_sand(
     let window = windows.get_primary().unwrap();
 
     if mouse_input.pressed(MouseButton::Left) {
-        let pos = window.cursor_position().unwrap().floor() / SPRITE_SIZE;
+        let pos = match window.cursor_position() {
+            Some(v) => v.ceil() / SPRITE_SIZE,
+            None => return,
+        };
 
-        let mut cell = map
-            .cells
-            .get_mut(&IVec2::new(pos.x as i32, pos.y as i32))
-            .unwrap();
+        let mut cell = match map.cells.get_mut(&IVec2::new(pos.x as i32, pos.y as i32)) {
+            Some(v) => v,
+            None => return,
+        };
+
         cell.element = Element::Sand;
 
         let mut sprite = query.get_component_mut::<Sprite>(cell.entity).unwrap();
