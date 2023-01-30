@@ -32,6 +32,7 @@ fn main() {
         .add_startup_system(setup)
         .add_startup_system_to_stage(StartupStage::PostStartup, populate_cells)
         .add_system(process_cells)
+        .add_system(update_transforms)
         .add_system(draw_cells)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())

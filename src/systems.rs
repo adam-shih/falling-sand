@@ -39,64 +39,38 @@ pub fn populate_cells(
     });
 }
 
-pub fn process_cells(
-    mut query: Query<&mut Transform>,
-    mut map: ResMut<CellMap>,
-) {
+pub fn update_transforms(mut query: Query<&mut Transform>, map: Res<CellMap>) {
+    for (pos, cell) in map.cells.iter() {
+        let mut transform =
+            query.get_component_mut::<Transform>(cell.entity).unwrap();
+
+        transform.translation = Vec3::new(
+            SPRITE_SIZE * pos.x as f32,
+            SPRITE_SIZE * pos.y as f32,
+            0.,
+        );
+    }
+}
+
+pub fn process_cells(mut map: ResMut<CellMap>) {
     let keys = map.cells.keys().cloned().collect::<Vec<_>>();
 
     for pos in keys {
         let cell = map.cells.get(&pos).unwrap();
         match cell.element {
             Element::Sand(_) => {
-                let (next_pos, next_cell) = match Sand::next(pos, &map) {
+                let next = match Sand::next(pos, &map) {
                     Some(v) => v,
                     None => continue,
                 };
-
-                let mut cell_transform =
-                    query.get_component_mut::<Transform>(cell.entity).unwrap();
-                cell_transform.translation = Vec3::new(
-                    SPRITE_SIZE * next_pos.x as f32,
-                    SPRITE_SIZE * next_pos.y as f32,
-                    0.,
-                );
-
-                let mut next_transform = query
-                    .get_component_mut::<Transform>(next_cell.entity)
-                    .unwrap();
-                next_transform.translation = Vec3::new(
-                    SPRITE_SIZE * pos.x as f32,
-                    SPRITE_SIZE * pos.y as f32,
-                    0.,
-                );
-
-                map.swap(&pos, &next_pos);
+                map.swap(&pos, &next);
             }
             Element::Water(_) => {
-                let (next_pos, next_cell) = match Water::next(pos, &map) {
+                let next = match Water::next(pos, &map) {
                     Some(v) => v,
                     None => continue,
                 };
-
-                let mut cell_transform =
-                    query.get_component_mut::<Transform>(cell.entity).unwrap();
-                cell_transform.translation = Vec3::new(
-                    SPRITE_SIZE * next_pos.x as f32,
-                    SPRITE_SIZE * next_pos.y as f32,
-                    0.,
-                );
-
-                let mut next_transform = query
-                    .get_component_mut::<Transform>(next_cell.entity)
-                    .unwrap();
-                next_transform.translation = Vec3::new(
-                    SPRITE_SIZE * pos.x as f32,
-                    SPRITE_SIZE * pos.y as f32,
-                    0.,
-                );
-
-                map.swap(&pos, &next_pos);
+                map.swap(&pos, &next);
             }
             _ => {}
         }

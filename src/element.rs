@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
 pub trait Physics {
-    fn next(pos: IVec2, map: &CellMap) -> Option<(IVec2, &Cell)>;
+    fn next(pos: IVec2, map: &CellMap) -> Option<IVec2>;
 }
 
 #[allow(dead_code)]
@@ -19,12 +19,12 @@ pub enum Element {
 pub struct Water;
 
 impl Physics for Water {
-    fn next(pos: IVec2, map: &CellMap) -> Option<(IVec2, &Cell)> {
+    fn next(pos: IVec2, map: &CellMap) -> Option<IVec2> {
         let mut rng = thread_rng();
         let coin = rng.gen_bool(0.5);
 
         let get_air =
-            |pos| map.cells.get(&pos).filter(|x| x.is_air()).map(|x| (pos, x));
+            |pos| map.cells.get(&pos).filter(|x| x.is_air()).map(|_| pos);
 
         let down = get_air(IVec2::new(pos.x, pos.y - 1));
         let left = get_air(IVec2::new(pos.x - 1, pos.y));
@@ -50,12 +50,12 @@ impl Physics for Water {
 pub struct Sand;
 
 impl Physics for Sand {
-    fn next(pos: IVec2, map: &CellMap) -> Option<(IVec2, &Cell)> {
+    fn next(pos: IVec2, map: &CellMap) -> Option<IVec2> {
         let mut rng = thread_rng();
         let coin = rng.gen_bool(0.5);
 
         let get_air =
-            |pos| map.cells.get(&pos).filter(|x| x.is_air()).map(|x| (pos, x));
+            |pos| map.cells.get(&pos).filter(|x| x.is_air()).map(|_| pos);
 
         let down = get_air(IVec2::new(pos.x, pos.y - 1));
         let down_left = get_air(IVec2::new(pos.x - 1, pos.y - 1));
