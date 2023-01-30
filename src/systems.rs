@@ -1,7 +1,6 @@
 use crate::cellmap::*;
 use crate::common::*;
 use bevy::input::mouse::*;
-use bevy::input::ButtonState;
 use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
@@ -16,11 +15,13 @@ pub fn populate_cells(
     commands.entity(base).with_children(|builder| {
         for x in 0..map.width {
             for y in 0..map.height {
-                let element = if rng.gen_bool(60. / 100.) || y < 30 {
-                    Element::Air
-                } else {
-                    Element::Sand
-                };
+                // let element = if rng.gen_bool(60. / 100.) || y < 30 {
+                //     Element::Air
+                // } else {
+                //     Element::Sand
+                // };
+
+                let element = Element::Air;
 
                 let new_entity = builder
                     .spawn(SpriteBundle {
@@ -39,7 +40,7 @@ pub fn populate_cells(
                     .id();
 
                 map.cells
-                    .insert(Position::new(x, y), Cell::new(new_entity, element));
+                    .insert(IVec2::new(x, y), Cell::new(new_entity, element));
             }
         }
     });
@@ -52,7 +53,9 @@ pub fn process_cells(mut query: Query<&mut Transform>, mut map: ResMut<CellMap>)
         let cell = map.cells.get(&pos).unwrap();
         match cell.element {
             Element::Sand => {
-                let under_cell = if let Some(v) = map.cells.get(&pos.under()) {
+                let under = IVec2::new(pos.x, pos.y - 1);
+
+                let under_cell = if let Some(v) = map.cells.get(&under) {
                     v
                 } else {
                     continue;
@@ -63,8 +66,6 @@ pub fn process_cells(mut query: Query<&mut Transform>, mut map: ResMut<CellMap>)
                     _ => {}
                 }
                 Vec3::new(SPRITE_SIZE * pos.x as f32, SPRITE_SIZE * pos.y as f32, 0.);
-
-                let under = pos.under();
 
                 let mut cell_transform = query.get_component_mut::<Transform>(cell.entity).unwrap();
                 cell_transform.translation = Vec3::new(
@@ -79,7 +80,7 @@ pub fn process_cells(mut query: Query<&mut Transform>, mut map: ResMut<CellMap>)
                 under_transform.translation =
                     Vec3::new(SPRITE_SIZE * pos.x as f32, SPRITE_SIZE * pos.y as f32, 0.);
 
-                map.swap(&pos, &pos.under());
+                map.swap(&pos, &under);
             }
             _ => {}
         }
@@ -87,22 +88,19 @@ pub fn process_cells(mut query: Query<&mut Transform>, mut map: ResMut<CellMap>)
 }
 
 pub fn draw_sand(
-    mut commands: Commands,
     mut map: ResMut<CellMap>,
     windows: Res<Windows>,
     mouse_input: Res<Input<MouseButton>>,
     mut query: Query<&mut Sprite>,
-    mut mousebtn_evr: EventReader<MouseButtonInput>,
 ) {
     let window = windows.get_primary().unwrap();
 
     if mouse_input.pressed(MouseButton::Left) {
         let pos = window.cursor_position().unwrap().floor() / SPRITE_SIZE;
-        info!("{:?}", pos);
 
         let mut cell = map
             .cells
-            .get_mut(&Position::new(pos.x as i32, pos.y as i32))
+            .get_mut(&IVec2::new(pos.x as i32, pos.y as i32))
             .unwrap();
         cell.element = Element::Sand;
 

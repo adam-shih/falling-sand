@@ -1,25 +1,6 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
 
-#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
-pub struct Position {
-    pub x: i32,
-    pub y: i32,
-}
-
-impl Position {
-    pub fn new(x: i32, y: i32) -> Self {
-        Self { x, y }
-    }
-
-    pub fn under(&self) -> Position {
-        Position {
-            x: self.x,
-            y: self.y - 1,
-        }
-    }
-}
-
 #[derive(Clone)]
 pub enum Element {
     Air,
@@ -51,7 +32,7 @@ impl Cell {
 pub struct CellMap {
     pub height: i32,
     pub width: i32,
-    pub cells: HashMap<Position, Cell>,
+    pub cells: HashMap<IVec2, Cell>,
 }
 
 impl CellMap {
@@ -63,7 +44,7 @@ impl CellMap {
         }
     }
 
-    pub fn swap(&mut self, a: &Position, b: &Position) {
+    pub fn swap(&mut self, a: &IVec2, b: &IVec2) {
         if !(self.cells.contains_key(&a) && self.cells.contains_key(&b)) {
             println!("Cells not found: {:?} and/or {:?}", a, b);
             return;
