@@ -75,30 +75,33 @@ pub fn process_cells(
     }
 }
 
-pub fn draw_sand(
+pub fn draw_cells(
     mut map: ResMut<CellMap>,
     windows: Res<Windows>,
     mouse_input: Res<Input<MouseButton>>,
     mut query: Query<&mut Sprite>,
+    element: Res<Element>,
 ) {
     let window = windows.get_primary().unwrap();
 
     if mouse_input.pressed(MouseButton::Left) {
         let pos = match window.cursor_position() {
-            Some(v) => v.ceil() / SPRITE_SIZE,
+            Some(v) => (v.ceil() / SPRITE_SIZE).as_ivec2(),
             None => return,
         };
 
-        let mut cell =
-            match map.cells.get_mut(&IVec2::new(pos.x as i32, pos.y as i32)) {
-                Some(v) => v,
-                None => return,
-            };
+        let positions = [pos, pos + IVec2::X, pos + IVec2::Y, pos + IVec2::ONE];
 
-        cell.element = Element::Sand(Sand);
-
-        let mut sprite =
-            query.get_component_mut::<Sprite>(cell.entity).unwrap();
-        sprite.color = cell.element.color();
+        for pos in positions {
+            match map.cells.get_mut(&pos) {
+                Some(v) => {
+                    v.element = element.clone();
+                    let mut sprite =
+                        query.get_component_mut::<Sprite>(v.entity).unwrap();
+                    sprite.color = v.element.color();
+                }
+                None => continue,
+            }
+        }
     }
 }

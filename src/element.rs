@@ -6,11 +6,12 @@ pub trait Physics {
     fn next(pos: IVec2, map: &CellMap) -> Option<(IVec2, &Cell)>;
 }
 
-#[derive(Clone)]
+#[derive(Resource, Clone)]
 pub enum Element {
     Air,
     Sand(Sand),
     Water(Water),
+    Stone,
 }
 
 #[derive(Clone)]
@@ -57,8 +58,9 @@ impl Element {
     pub fn color(&self) -> Color {
         match *self {
             Element::Air => Color::NONE,
-            Element::Sand(_) => Color::AQUAMARINE,
+            Element::Sand(_) => Color::BISQUE,
             Element::Water(_) => Color::AQUAMARINE,
+            Element::Stone => Color::GRAY,
         }
     }
 }

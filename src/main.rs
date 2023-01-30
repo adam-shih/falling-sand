@@ -9,6 +9,7 @@ mod systems;
 use bevy::window::WindowResizeConstraints;
 use cellmap::*;
 use common::*;
+use element::*;
 use systems::*;
 
 fn main() {
@@ -31,9 +32,9 @@ fn main() {
         .add_startup_system(setup)
         .add_startup_system_to_stage(StartupStage::PostStartup, populate_cells)
         .add_system(process_cells)
+        .add_system(draw_cells)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_system(draw_sand)
         .run();
 }
 
@@ -50,4 +51,5 @@ fn setup(mut commands: Commands) {
         Base,
     ));
     commands.insert_resource(map);
+    commands.insert_resource(Element::Sand(Sand));
 }
