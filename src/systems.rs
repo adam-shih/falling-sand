@@ -1,5 +1,7 @@
 use crate::cellmap::*;
 use crate::common::*;
+use bevy::input::mouse::*;
+use bevy::input::ButtonState;
 use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
@@ -43,7 +45,7 @@ pub fn populate_cells(
     });
 }
 
-pub fn process_cells(mut map: ResMut<CellMap>) {
+pub fn process_cells(mut query: Query<&mut Transform>, mut map: ResMut<CellMap>) {
     let keys = map.cells.keys().cloned().collect::<Vec<_>>();
 
     for pos in keys {
@@ -60,6 +62,22 @@ pub fn process_cells(mut map: ResMut<CellMap>) {
                     Element::Sand => continue,
                     _ => {}
                 }
+                Vec3::new(SPRITE_SIZE * pos.x as f32, SPRITE_SIZE * pos.y as f32, 0.);
+
+                let under = pos.under();
+
+                let mut cell_transform = query.get_component_mut::<Transform>(cell.entity).unwrap();
+                cell_transform.translation = Vec3::new(
+                    SPRITE_SIZE * under.x as f32,
+                    SPRITE_SIZE * under.y as f32,
+                    0.,
+                );
+
+                let mut under_transform = query
+                    .get_component_mut::<Transform>(under_cell.entity)
+                    .unwrap();
+                under_transform.translation =
+                    Vec3::new(SPRITE_SIZE * pos.x as f32, SPRITE_SIZE * pos.y as f32, 0.);
 
                 map.swap(&pos, &pos.under());
             }
@@ -68,10 +86,27 @@ pub fn process_cells(mut map: ResMut<CellMap>) {
     }
 }
 
-pub fn update_sprites(mut query: Query<&mut Transform>, map: Res<CellMap>) {
-    for (pos, cell) in map.cells.iter() {
-        let mut transform = query.get_component_mut::<Transform>(cell.entity).unwrap();
-        transform.translation =
-            Vec3::new(SPRITE_SIZE * pos.x as f32, SPRITE_SIZE * pos.y as f32, 0.);
+pub fn draw_sand(
+    mut commands: Commands,
+    mut map: ResMut<CellMap>,
+    windows: Res<Windows>,
+    mouse_input: Res<Input<MouseButton>>,
+    mut query: Query<&mut Sprite>,
+    mut mousebtn_evr: EventReader<MouseButtonInput>,
+) {
+    let window = windows.get_primary().unwrap();
+
+    if mouse_input.pressed(MouseButton::Left) {
+        let pos = window.cursor_position().unwrap().floor() / SPRITE_SIZE;
+        info!("{:?}", pos);
+
+        let mut cell = map
+            .cells
+            .get_mut(&Position::new(pos.x as i32, pos.y as i32))
+            .unwrap();
+        cell.element = Element::Sand;
+
+        let mut sprite = query.get_component_mut::<Sprite>(cell.entity).unwrap();
+        sprite.color = Color::BISQUE;
     }
 }

@@ -5,6 +5,7 @@ mod cellmap;
 mod common;
 mod systems;
 
+use bevy::window::WindowResizeConstraints;
 use cellmap::*;
 use common::*;
 use systems::*;
@@ -13,8 +14,15 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             window: WindowDescriptor {
+                title: "Falling Sand".to_string(),
                 width: 500.,
                 height: 500.,
+                resize_constraints: WindowResizeConstraints {
+                    max_width: 500.,
+                    max_height: 500.,
+                    min_width: 500.,
+                    min_height: 500.,
+                },
                 ..default()
             },
             ..default()
@@ -22,14 +30,14 @@ fn main() {
         .add_startup_system(setup)
         .add_startup_system_to_stage(StartupStage::PostStartup, populate_cells)
         .add_system(process_cells)
-        .add_system(update_sprites)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_system(draw_sand)
         .run();
 }
 
 fn setup(mut commands: Commands) {
-    let map = CellMap::new(50, 50);
+    let map = CellMap::new(125, 125);
 
     commands.spawn(Camera2dBundle::default());
     commands.spawn((
