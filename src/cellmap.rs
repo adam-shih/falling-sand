@@ -2,17 +2,52 @@ use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 
+pub trait Physics {
+    fn next(pos: IVec2, map: &CellMap) -> Option<(IVec2, &Cell)>;
+}
+
 #[derive(Clone)]
 pub enum Element {
     Air,
-    Sand,
+    Sand(Sand),
+}
+
+#[derive(Clone)]
+pub struct Sand;
+
+impl Physics for Sand {
+    fn next(pos: IVec2, map: &CellMap) -> Option<(IVec2, &Cell)> {
+        let mut rng = thread_rng();
+        let coin = rng.gen_bool(0.5);
+
+        let get_air =
+            |pos| map.cells.get(&pos).filter(|x| x.is_air()).map(|x| (pos, x));
+
+        let down = get_air(IVec2::new(pos.x, pos.y - 1));
+        let left = get_air(IVec2::new(pos.x - 1, pos.y - 1));
+        let right = get_air(IVec2::new(pos.x + 1, pos.y - 1));
+
+        if down.is_some() {
+            return down;
+        }
+
+        if left.is_none() && right.is_none() {
+            return None;
+        }
+
+        if coin {
+            left
+        } else {
+            right
+        }
+    }
 }
 
 impl Element {
     pub fn color(&self) -> Color {
         match *self {
             Element::Air => Color::NONE,
-            Element::Sand => Color::BISQUE,
+            Element::Sand(_) => Color::BISQUE,
         }
     }
 }
@@ -29,11 +64,7 @@ impl Cell {
     }
 
     pub fn is_air(&self) -> bool {
-        if let Element::Air = self.element {
-            true
-        } else {
-            false
-        }
+        matches!(self.element, Element::Air)
     }
 }
 
@@ -54,60 +85,15 @@ impl CellMap {
     }
 
     pub fn swap(&mut self, a: &IVec2, b: &IVec2) {
-        if !(self.cells.contains_key(&a) && self.cells.contains_key(&b)) {
+        if !(self.cells.contains_key(a) && self.cells.contains_key(b)) {
             println!("Cells not found: {:?} and/or {:?}", a, b);
             return;
         }
 
-        let val_a = self.cells.get(&a).unwrap().clone();
-        let val_b = self.cells.get(&b).unwrap().clone();
+        let val_a = self.cells.get(a).unwrap().clone();
+        let val_b = self.cells.get(b).unwrap().clone();
 
         self.cells.insert(*a, val_b);
         self.cells.insert(*b, val_a);
-    }
-
-    pub fn get_next(&self, pos: &IVec2) -> Option<IVec2> {
-        let mut rng = thread_rng();
-        let coin = rng.gen_bool(0.5);
-        let mut left = false;
-        let mut right = false;
-
-        if let Some(_) = self
-            .cells
-            .get(&IVec2::new(pos.x, pos.y - 1))
-            .filter(|x| x.is_air())
-        {
-            return Some(IVec2::new(pos.x, pos.y - 1));
-        }
-
-        if let Some(_) = self
-            .cells
-            .get(&IVec2::new(pos.x - 1, pos.y - 1))
-            .filter(|x| x.is_air())
-        {
-            left = true;
-        }
-
-        if let Some(_) = self
-            .cells
-            .get(&IVec2::new(pos.x + 1, pos.y - 1))
-            .filter(|x| x.is_air())
-        {
-            right = true;
-        }
-
-        if !(left || right) {
-            return None;
-        }
-        // else if left && !right {
-        //     return Some(IVec2::new(pos.x - 1, pos.y - 1));
-        // } else if right && !left {
-        //     return Some(IVec2::new(pos.x + 1, pos.y - 1));
-        // } else
-        if coin {
-            return Some(IVec2::new(pos.x - 1, pos.y - 1));
-        } else {
-            return Some(IVec2::new(pos.x + 1, pos.y - 1));
-        }
     }
 }
