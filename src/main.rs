@@ -51,5 +51,5 @@ fn setup(mut commands: Commands) {
         Base,
     ));
     commands.insert_resource(map);
-    commands.insert_resource(Element::Sand(Sand));
+    commands.insert_resource(Element::Water(Water));
 }
