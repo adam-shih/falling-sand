@@ -1,5 +1,6 @@
 use crate::cellmap::*;
 use crate::common::*;
+use crate::element::*;
 use bevy::input::mouse::*;
 use bevy::prelude::*;
 
@@ -98,6 +99,6 @@ pub fn draw_sand(
 
         let mut sprite =
             query.get_component_mut::<Sprite>(cell.entity).unwrap();
-        sprite.color = Color::BISQUE;
+        sprite.color = cell.element.color();
     }
 }

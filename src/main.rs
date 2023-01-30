@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 mod cellmap;
 mod common;
+mod element;
 mod systems;
 
 use bevy::window::WindowResizeConstraints;
