@@ -118,7 +118,17 @@ pub fn draw_cells(
             None => return,
         };
 
-        let positions = [pos, pos + IVec2::X, pos + IVec2::Y, pos + IVec2::ONE];
+        let positions = [
+            pos,
+            pos + IVec2::Y,
+            pos + IVec2::ONE,
+            pos + IVec2::X,
+            pos + IVec2::X + IVec2::NEG_Y,
+            pos + IVec2::NEG_Y,
+            pos + IVec2::NEG_ONE,
+            pos + IVec2::NEG_X,
+            pos + IVec2::NEG_X + IVec2::Y,
+        ];
 
         for pos in positions {
             match map.cells.get_mut(&pos) {
