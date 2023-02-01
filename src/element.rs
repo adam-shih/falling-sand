@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
 pub trait Physics {
-    fn next(pos: IVec2, map: &CellMap) -> Option<IVec2>;
+    fn next(&self, pos: IVec2, map: &CellMap) -> Option<IVec2>;
 }
 
 #[allow(dead_code)]
@@ -18,8 +18,8 @@ pub enum Element {
 #[derive(Clone)]
 pub struct Water;
 
-impl Physics for Water {
-    fn next(pos: IVec2, map: &CellMap) -> Option<IVec2> {
+impl Water {
+    pub fn next(pos: IVec2, map: &CellMap) -> Option<IVec2> {
         let mut rng = thread_rng();
         let coin = rng.gen_bool(0.5);
 
@@ -49,8 +49,8 @@ impl Physics for Water {
 #[derive(Clone)]
 pub struct Sand;
 
-impl Physics for Sand {
-    fn next(pos: IVec2, map: &CellMap) -> Option<IVec2> {
+impl Sand {
+    pub fn next(pos: IVec2, map: &CellMap) -> Option<IVec2> {
         let mut rng = thread_rng();
         let coin = rng.gen_bool(0.5);
 

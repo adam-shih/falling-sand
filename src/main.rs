@@ -30,10 +30,12 @@ fn main() {
             ..default()
         }))
         .add_startup_system(setup)
+        .add_startup_system(setup_ui)
         .add_startup_system_to_stage(StartupStage::PostStartup, populate_cells)
         .add_system(process_cells)
         .add_system(update_transforms)
         .add_system(draw_cells)
+        .add_system(cursor_on_ui)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .run();
@@ -53,4 +55,21 @@ fn setup(mut commands: Commands) {
     ));
     commands.insert_resource(map);
     commands.insert_resource(Element::Water(Water));
+    commands.insert_resource(CursorOnUI(false));
+}
+
+fn setup_ui(mut commands: Commands) {
+    commands.spawn(ButtonBundle {
+        style: Style {
+            size: Size::new(Val::Px(30.), Val::Px(30.)),
+            margin: UiRect {
+                left: Val::Px(10.),
+                top: Val::Px(10.),
+                ..default()
+            },
+            ..default()
+        },
+        background_color: Color::rgb(0.15, 0.15, 0.15).into(),
+        ..default()
+    });
 }

@@ -57,7 +57,8 @@ pub fn process_cells(mut map: ResMut<CellMap>) {
 
     for pos in keys {
         let cell = map.cells.get(&pos).unwrap();
-        match cell.element {
+
+        match &cell.element {
             Element::Sand(_) => {
                 let next = match Sand::next(pos, &map) {
                     Some(v) => v,
@@ -78,12 +79,17 @@ pub fn process_cells(mut map: ResMut<CellMap>) {
 }
 
 pub fn draw_cells(
-    mut map: ResMut<CellMap>,
-    windows: Res<Windows>,
-    mouse_input: Res<Input<MouseButton>>,
-    mut query: Query<&mut Sprite>,
     element: Res<Element>,
+    mouse_input: Res<Input<MouseButton>>,
+    windows: Res<Windows>,
+    ptr_on_ui: Res<CursorOnUI>,
+    mut map: ResMut<CellMap>,
+    mut query: Query<&mut Sprite>,
 ) {
+    if ptr_on_ui.0 {
+        return;
+    }
+
     let window = windows.get_primary().unwrap();
 
     if mouse_input.pressed(MouseButton::Left) {
@@ -106,14 +112,28 @@ pub fn draw_cells(
 
         for pos in positions {
             match map.cells.get_mut(&pos) {
-                Some(v) => {
-                    v.element = element.clone();
+                Some(cell) => {
+                    cell.element = element.clone();
                     let mut sprite =
-                        query.get_component_mut::<Sprite>(v.entity).unwrap();
-                    sprite.color = v.element.color();
+                        query.get_component_mut::<Sprite>(cell.entity).unwrap();
+                    sprite.color = cell.element.color();
                 }
                 None => continue,
             }
         }
     }
+}
+
+pub fn cursor_on_ui(
+    mut cursor_on_ui: ResMut<CursorOnUI>,
+    query: Query<&Interaction>,
+) {
+    for i in query.iter() {
+        if let Interaction::Clicked | Interaction::Hovered = i {
+            cursor_on_ui.0 = true;
+            return;
+        }
+    }
+
+    cursor_on_ui.0 = false;
 }
