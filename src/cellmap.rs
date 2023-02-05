@@ -15,19 +15,6 @@ pub enum Direction {
     UpRight,
 }
 
-// pub const NEIGHBOR_COORDS: HashMap<Direction, IVec2> = [
-//     (Down, IVec2::new(0, -1)),
-//     (Left, IVec2::new(-1, 0)),
-//     (Right, IVec2::new(1, 0)),
-//     (Up, IVec2::new(0, 1)),
-//     (DownLeft, IVec2::new(-1, -1)),
-//     (DownRight, IVec2::new(1, -1)),
-//     (UpLeft, IVec2::new(-1, 1)),
-//     (UpRight, IVec2::new(1, 1)),
-// ]
-// .iter()
-// .cloned()
-// .collect();
 pub const NEIGHBOR_COORDS: [IVec2; 8] = [
     IVec2::new(0, -1),
     IVec2::new(-1, 0),
@@ -38,6 +25,10 @@ pub const NEIGHBOR_COORDS: [IVec2; 8] = [
     IVec2::new(-1, 1),
     IVec2::new(1, 1),
 ];
+
+pub fn coord(dir: Direction, pos: IVec2) -> Option<IVec2> {
+    Some(NEIGHBOR_COORDS[dir as usize] + pos)
+}
 
 #[derive(Clone)]
 pub struct Cell {

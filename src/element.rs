@@ -1,6 +1,6 @@
 use crate::cellmap::{Direction, *};
 use bevy::prelude::*;
-use rand::{thread_rng, Rng};
+use rand::{rngs::ThreadRng, thread_rng, Rng};
 
 #[allow(dead_code)]
 #[derive(Resource, Clone, Copy)]
@@ -33,67 +33,71 @@ impl Element {
     }
 }
 
-fn handle_sand(pos: IVec2, map: &mut CellMap) {
-    let mut rng = thread_rng();
-    let coin = rng.gen_bool(0.5);
-    let neighbor_elements = map.neighbor_elements(pos);
+fn random_choice(
+    dir1: Direction,
+    dir2: Direction,
+    pos: IVec2,
+    mut rng: ThreadRng,
+) -> Option<IVec2> {
+    if rng.gen_bool(0.5) {
+        coord(dir1, pos)
+    } else {
+        coord(dir2, pos)
+    }
+}
 
-    if matches!(
-        neighbor_elements[Direction::Down as usize],
-        Element::Air | Element::Water
-    ) {
-        map.swap(&pos, &(NEIGHBOR_COORDS[Direction::Down as usize] + pos));
-    } else if coin
-        && matches!(
-            neighbor_elements[Direction::DownLeft as usize],
-            Element::Air | Element::Water
-        )
-    {
-        map.swap(&pos, &(NEIGHBOR_COORDS[Direction::DownLeft as usize] + pos));
-    } else if !coin
-        && matches!(
-            neighbor_elements[Direction::DownRight as usize],
-            Element::Air | Element::Water
-        )
-    {
-        map.swap(
-            &pos,
-            &(NEIGHBOR_COORDS[Direction::DownRight as usize] + pos),
-        );
+fn handle_sand(pos: IVec2, map: &mut CellMap) {
+    let rng = thread_rng();
+    let neighbor_elements = map.neighbor_elements(pos);
+    let can_move = |dir| match neighbor_elements[dir as usize] {
+        Element::Air | Element::Water => true,
+        _ => false,
+    };
+
+    let dest = if can_move(Direction::Down) {
+        coord(Direction::Down, pos)
+    } else if can_move(Direction::DownLeft) && can_move(Direction::DownRight) {
+        random_choice(Direction::DownLeft, Direction::DownRight, pos, rng)
+    } else if can_move(Direction::DownLeft) {
+        coord(Direction::DownLeft, pos)
+    } else if can_move(Direction::DownRight) {
+        coord(Direction::DownRight, pos)
+    } else {
+        None
+    };
+
+    if dest.is_some() {
+        map.swap(&pos, &dest.unwrap());
     }
 }
 
 fn handle_water(pos: IVec2, map: &mut CellMap) {
-    let mut rng = thread_rng();
-    let coin = rng.gen_bool(0.5);
+    let rng = thread_rng();
     let neighbor_elements = map.neighbor_elements(pos);
+    let can_move = |dir| match neighbor_elements[dir as usize] {
+        Element::Air => true,
+        _ => false,
+    };
 
-    if matches!(neighbor_elements[Direction::Down as usize], Element::Air) {
-        map.swap(&pos, &(NEIGHBOR_COORDS[Direction::Down as usize] + pos));
-    } else if coin
-        && matches!(
-            neighbor_elements[Direction::DownLeft as usize],
-            Element::Air
-        )
-    {
-        map.swap(&pos, &(NEIGHBOR_COORDS[Direction::DownLeft as usize] + pos));
-    } else if !coin
-        && matches!(
-            neighbor_elements[Direction::DownRight as usize],
-            Element::Air
-        )
-    {
-        map.swap(
-            &pos,
-            &(NEIGHBOR_COORDS[Direction::DownRight as usize] + pos),
-        );
-    } else if coin
-        && matches!(neighbor_elements[Direction::Left as usize], Element::Air)
-    {
-        map.swap(&pos, &(NEIGHBOR_COORDS[Direction::Left as usize] + pos));
-    } else if !coin
-        && matches!(neighbor_elements[Direction::Right as usize], Element::Air)
-    {
-        map.swap(&pos, &(NEIGHBOR_COORDS[Direction::Right as usize] + pos));
+    let dest = if can_move(Direction::Down) {
+        coord(Direction::Down, pos)
+    } else if can_move(Direction::DownLeft) && can_move(Direction::DownRight) {
+        random_choice(Direction::DownLeft, Direction::DownRight, pos, rng)
+    } else if can_move(Direction::DownLeft) {
+        coord(Direction::DownLeft, pos)
+    } else if can_move(Direction::DownRight) {
+        coord(Direction::DownRight, pos)
+    } else if can_move(Direction::Left) && can_move(Direction::Right) {
+        random_choice(Direction::Left, Direction::Right, pos, rng)
+    } else if can_move(Direction::Left) {
+        coord(Direction::Left, pos)
+    } else if can_move(Direction::Right) {
+        coord(Direction::Right, pos)
+    } else {
+        None
+    };
+
+    if dest.is_some() {
+        map.swap(&pos, &dest.unwrap());
     }
 }
