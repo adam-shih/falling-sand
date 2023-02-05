@@ -58,20 +58,6 @@ pub fn process_cells(mut map: ResMut<CellMap>) {
     for pos in keys {
         let cell = map.cells.get(&pos).unwrap().clone();
         cell.element.next(pos, &mut map);
-
-        // let next = match &cell.element {
-        //     Element::Sand(_) => match Sand::next(pos, &map) {
-        //         Some(v) => v,
-        //         None => continue,
-        //     },
-        //     Element::Water(water) => match water.next(pos, &map) {
-        //         Some(v) => v,
-        //         None => continue,
-        //     },
-        //     _ => continue,
-        // };
-
-        // map.swap(&pos, &next);
     }
 }
 
@@ -111,8 +97,10 @@ pub fn draw_cells(
             let cell = map.cells.get_mut(&pos);
             match cell {
                 Some(c) => {
-                    if matches!(c.element, Element::Air) {
-                        c.element = element.clone();
+                    if matches!(c.element, Element::Air)
+                        || matches!(*element, Element::Air)
+                    {
+                        c.element = *element;
                         let mut sprite = query
                             .get_component_mut::<Sprite>(c.entity)
                             .unwrap();
@@ -146,5 +134,7 @@ pub fn select_element(mut element: ResMut<Element>, keys: Res<Input<KeyCode>>) {
         *element = Element::Water;
     } else if keys.just_pressed(KeyCode::Key3) {
         *element = Element::Stone;
+    } else if keys.just_pressed(KeyCode::Key4) {
+        *element = Element::Air;
     }
 }
