@@ -56,25 +56,22 @@ pub fn process_cells(mut map: ResMut<CellMap>) {
     let keys = map.cells.keys().cloned().collect::<Vec<_>>();
 
     for pos in keys {
-        let cell = map.cells.get(&pos).unwrap();
+        let cell = map.cells.get(&pos).unwrap().clone();
+        cell.element.next(pos, &mut map);
 
-        match &cell.element {
-            Element::Sand(_) => {
-                let next = match Sand::next(pos, &map) {
-                    Some(v) => v,
-                    None => continue,
-                };
-                map.swap(&pos, &next);
-            }
-            Element::Water(_) => {
-                let next = match Water::next(pos, &map) {
-                    Some(v) => v,
-                    None => continue,
-                };
-                map.swap(&pos, &next);
-            }
-            _ => {}
-        }
+        // let next = match &cell.element {
+        //     Element::Sand(_) => match Sand::next(pos, &map) {
+        //         Some(v) => v,
+        //         None => continue,
+        //     },
+        //     Element::Water(water) => match water.next(pos, &map) {
+        //         Some(v) => v,
+        //         None => continue,
+        //     },
+        //     _ => continue,
+        // };
+
+        // map.swap(&pos, &next);
     }
 }
 
@@ -111,12 +108,16 @@ pub fn draw_cells(
         ];
 
         for pos in positions {
-            match map.cells.get_mut(&pos) {
-                Some(cell) => {
-                    cell.element = element.clone();
-                    let mut sprite =
-                        query.get_component_mut::<Sprite>(cell.entity).unwrap();
-                    sprite.color = cell.element.color();
+            let cell = map.cells.get_mut(&pos);
+            match cell {
+                Some(c) => {
+                    if matches!(c.element, Element::Air) {
+                        c.element = element.clone();
+                        let mut sprite = query
+                            .get_component_mut::<Sprite>(c.entity)
+                            .unwrap();
+                        sprite.color = c.element.color();
+                    }
                 }
                 None => continue,
             }
@@ -136,4 +137,14 @@ pub fn cursor_on_ui(
     }
 
     cursor_on_ui.0 = false;
+}
+
+pub fn select_element(mut element: ResMut<Element>, keys: Res<Input<KeyCode>>) {
+    if keys.just_pressed(KeyCode::Key1) {
+        *element = Element::Sand;
+    } else if keys.just_pressed(KeyCode::Key2) {
+        *element = Element::Water;
+    } else if keys.just_pressed(KeyCode::Key3) {
+        *element = Element::Stone;
+    }
 }
