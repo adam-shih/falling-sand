@@ -2,33 +2,14 @@ use crate::element::*;
 use bevy::prelude::*;
 use std::collections::HashMap;
 
-#[allow(dead_code)]
-#[derive(Clone, Hash, Eq, PartialEq)]
-pub enum Direction {
-    Down,
-    Left,
-    Right,
-    Up,
-    DownLeft,
-    DownRight,
-    UpLeft,
-    UpRight,
-}
-
-pub const NEIGHBOR_COORDS: [IVec2; 8] = [
-    IVec2::new(0, -1),
-    IVec2::new(-1, 0),
-    IVec2::new(1, 0),
-    IVec2::new(0, 1),
-    IVec2::new(-1, -1),
-    IVec2::new(1, -1),
-    IVec2::new(-1, 1),
-    IVec2::new(1, 1),
-];
-
-pub fn coord(dir: Direction, pos: IVec2) -> Option<IVec2> {
-    Some(NEIGHBOR_COORDS[dir as usize] + pos)
-}
+pub const DOWN: IVec2 = IVec2::new(0, -1);
+pub const LEFT: IVec2 = IVec2::new(-1, 0);
+pub const RIGHT: IVec2 = IVec2::new(1, 0);
+pub const UP: IVec2 = IVec2::new(0, 1);
+pub const DOWN_LEFT: IVec2 = IVec2::new(-1, -1);
+pub const DOWN_RIGHT: IVec2 = IVec2::new(1, -1);
+pub const UP_LEFT: IVec2 = IVec2::new(-1, 1);
+pub const UP_RIGHT: IVec2 = IVec2::new(1, 1);
 
 #[derive(Clone)]
 pub struct Cell {
@@ -56,20 +37,6 @@ impl CellMap {
             height,
             cells: default(),
         }
-    }
-
-    pub fn neighbor_elements(&self, pos: IVec2) -> [Element; 8] {
-        let mut res = [Element::None; 8];
-
-        let neighbor_coords = NEIGHBOR_COORDS.iter().map(|v| pos + *v);
-
-        for (i, v) in neighbor_coords.enumerate() {
-            if let Some(cell) = self.cells.get(&v) {
-                res[i] = cell.element;
-            }
-        }
-
-        res
     }
 
     pub fn swap(&mut self, a: &IVec2, b: &IVec2) {
