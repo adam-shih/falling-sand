@@ -5,11 +5,11 @@ use std::collections::HashMap;
 pub const DOWN: IVec2 = IVec2::new(0, -1);
 pub const LEFT: IVec2 = IVec2::new(-1, 0);
 pub const RIGHT: IVec2 = IVec2::new(1, 0);
-pub const UP: IVec2 = IVec2::new(0, 1);
+pub const _UP: IVec2 = IVec2::new(0, 1);
 pub const DOWN_LEFT: IVec2 = IVec2::new(-1, -1);
 pub const DOWN_RIGHT: IVec2 = IVec2::new(1, -1);
-pub const UP_LEFT: IVec2 = IVec2::new(-1, 1);
-pub const UP_RIGHT: IVec2 = IVec2::new(1, 1);
+pub const _UP_LEFT: IVec2 = IVec2::new(-1, 1);
+pub const _UP_RIGHT: IVec2 = IVec2::new(1, 1);
 
 #[derive(Clone)]
 pub struct Cell {
