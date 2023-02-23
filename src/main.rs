@@ -11,7 +11,9 @@ use cellmap::*;
 use common::*;
 use element::*;
 use systems::*;
+use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen(start)]
 fn main() {
     let system_set = SystemSet::new()
         .with_system(process_cells)
@@ -32,6 +34,7 @@ fn main() {
                     min_width: 500.,
                     min_height: 500.,
                 },
+                canvas: Some("#bevy-canvas".to_string()),
                 ..default()
             },
             ..default()
