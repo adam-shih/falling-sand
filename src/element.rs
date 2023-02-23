@@ -1,6 +1,6 @@
 use crate::cellmap::*;
 use bevy::prelude::*;
-use rand::{rngs::ThreadRng, thread_rng, Rng};
+use rand::{thread_rng, Rng};
 
 #[allow(dead_code)]
 #[derive(Resource, Clone, Copy)]
@@ -17,7 +17,7 @@ impl Element {
         match *self {
             Element::Air | Element::None => Color::NONE,
             Element::Sand => Color::BISQUE,
-            Element::Water => Color::AQUAMARINE,
+            Element::Water => Color::BLUE,
             Element::Stone => Color::GRAY,
         }
     }
@@ -69,7 +69,7 @@ fn handle_sand(pos: IVec2, map: &mut CellMap) {
 }
 
 fn handle_water(pos: IVec2, map: &mut CellMap) {
-    let can_move = |dir| match map.cells.get(&(dir + pos)) {
+    let can_move = |pos| match map.cells.get(&(pos)) {
         Some(v) => match v.element {
             Element::Air => true,
             _ => false,
@@ -77,20 +77,34 @@ fn handle_water(pos: IVec2, map: &mut CellMap) {
         None => false,
     };
 
-    let dest = if can_move(DOWN) {
+    let disperse = |dir: IVec2| {
+        let range = 5;
+        let mut res = 1;
+
+        for i in 1..range {
+            if !can_move(pos + dir * i) {
+                break;
+            }
+            res = i;
+        }
+
+        res * dir
+    };
+
+    let dest = if can_move(pos + DOWN) {
         Some(DOWN + pos)
-    } else if can_move(DOWN_LEFT) && can_move(DOWN_RIGHT) {
+    } else if can_move(pos + DOWN_LEFT) && can_move(pos + DOWN_RIGHT) {
         Some(coin_flip(DOWN_LEFT, DOWN_RIGHT) + pos)
-    } else if can_move(DOWN_LEFT) {
+    } else if can_move(pos + DOWN_LEFT) {
         Some(DOWN_LEFT + pos)
-    } else if can_move(DOWN_RIGHT) {
+    } else if can_move(pos + DOWN_RIGHT) {
         Some(DOWN_RIGHT + pos)
-    } else if can_move(LEFT) && can_move(RIGHT) {
-        Some(coin_flip(LEFT, RIGHT) + pos)
-    } else if can_move(LEFT) {
-        Some(LEFT + pos)
-    } else if can_move(RIGHT) {
-        Some(RIGHT + pos)
+    } else if can_move(pos + LEFT) && can_move(pos + RIGHT) {
+        Some(disperse(coin_flip(LEFT, RIGHT)) + pos)
+    } else if can_move(pos + LEFT) {
+        Some(disperse(LEFT) + pos)
+    } else if can_move(pos + RIGHT) {
+        Some(disperse(RIGHT) + pos)
     } else {
         None
     };
