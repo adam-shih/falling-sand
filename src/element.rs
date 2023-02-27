@@ -2,8 +2,7 @@ use crate::cellmap::*;
 use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
-#[allow(dead_code)]
-#[derive(Resource, Clone, Copy)]
+#[derive(Component, Resource, Clone, Copy)]
 pub enum Element {
     None,
     Air,
@@ -44,10 +43,7 @@ fn coin_flip<T>(heads: T, tails: T) -> T {
 
 fn handle_sand(pos: IVec2, map: &mut CellMap) {
     let can_move = |dir| match map.cells.get(&(dir + pos)) {
-        Some(v) => match v.element {
-            Element::Air | Element::Water => true,
-            _ => false,
-        },
+        Some(v) => matches!(v.element, Element::Air | Element::Water),
         None => false,
     };
 
@@ -63,17 +59,14 @@ fn handle_sand(pos: IVec2, map: &mut CellMap) {
         None
     };
 
-    if dest.is_some() {
-        map.swap(&pos, &dest.unwrap());
+    if let Some(dest) = dest {
+        map.swap(&pos, &dest);
     }
 }
 
 fn handle_water(pos: IVec2, map: &mut CellMap) {
     let can_move = |pos| match map.cells.get(&(pos)) {
-        Some(v) => match v.element {
-            Element::Air => true,
-            _ => false,
-        },
+        Some(v) => matches!(v.element, Element::Air),
         None => false,
     };
 
@@ -109,7 +102,7 @@ fn handle_water(pos: IVec2, map: &mut CellMap) {
         None
     };
 
-    if dest.is_some() {
-        map.swap(&pos, &dest.unwrap());
+    if let Some(dest) = dest {
+        map.swap(&pos, &dest);
     }
 }

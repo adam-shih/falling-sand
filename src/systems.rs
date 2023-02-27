@@ -1,7 +1,6 @@
-use crate::cellmap::*;
-use crate::common::*;
-use crate::element::*;
-use bevy::input::mouse::*;
+use crate::{
+    cellmap::*, components::*, constants::*, element::*, resources::*,
+};
 use bevy::prelude::*;
 
 pub fn populate_cells(
@@ -111,20 +110,6 @@ pub fn draw_cells(
             }
         }
     }
-}
-
-pub fn cursor_on_ui(
-    mut cursor_on_ui: ResMut<CursorOnUI>,
-    query: Query<&Interaction>,
-) {
-    for i in query.iter() {
-        if let Interaction::Clicked | Interaction::Hovered = i {
-            cursor_on_ui.0 = true;
-            return;
-        }
-    }
-
-    cursor_on_ui.0 = false;
 }
 
 pub fn select_element(mut element: ResMut<Element>, keys: Res<Input<KeyCode>>) {
