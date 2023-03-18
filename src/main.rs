@@ -14,25 +14,28 @@ use falling_sand::{
 use wasm_bindgen::prelude::*;
 
 fn main() {
-    start();
-}
+    // let system_set = SystemSet::new()
+    //     .with_system(process_cells)
+    //     .with_system(update_transforms)
+    //     .with_system(draw_cells)
+    //     .with_system(cursor_on_ui)
+    //     .with_system(handle_buttons)
+    //     .with_system(select_element);
 
-#[wasm_bindgen]
-pub fn start() {
-    let system_set = SystemSet::new()
-        .with_system(process_cells)
-        .with_system(update_transforms)
-        .with_system(draw_cells)
-        .with_system(cursor_on_ui)
-        .with_system(handle_buttons)
-        .with_system(select_element);
+    let system_set = (
+        process_cells,
+        update_transforms,
+        draw_cells,
+        cursor_on_ui,
+        handle_buttons,
+        select_element,
+    );
 
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
-            window: WindowDescriptor {
+            primary_window: Some(Window {
                 title: "Falling Sand".to_string(),
-                width: 500.,
-                height: 500.,
+                resolution: (500., 500.).into(),
                 resize_constraints: WindowResizeConstraints {
                     max_width: 500.,
                     max_height: 500.,
@@ -41,14 +44,13 @@ pub fn start() {
                 },
                 canvas: Some("#bevy-canvas".to_string()),
                 ..default()
-            },
+            }),
             ..default()
         }))
         .add_startup_system(setup)
         .add_startup_system(setup_ui)
-        .add_startup_system_to_stage(StartupStage::PostStartup, populate_cells)
-        .add_system_set(system_set)
-        // .add_plugin(LogDiagnosticsPlugin::default())
+        .add_startup_system(populate_cells.in_base_set(StartupSet::PostStartup))
+        .add_systems(system_set)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .run();
 }

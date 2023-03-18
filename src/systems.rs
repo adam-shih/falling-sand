@@ -1,7 +1,7 @@
 use crate::{
     cellmap::*, components::*, constants::*, element::*, resources::*,
 };
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 
 pub fn populate_cells(
     mut commands: Commands,
@@ -63,7 +63,7 @@ pub fn process_cells(mut map: ResMut<CellMap>) {
 pub fn draw_cells(
     element: Res<Element>,
     mouse_input: Res<Input<MouseButton>>,
-    windows: Res<Windows>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
     ptr_on_ui: Res<CursorOnUI>,
     mut map: ResMut<CellMap>,
     mut query: Query<&mut Sprite>,
@@ -72,7 +72,7 @@ pub fn draw_cells(
         return;
     }
 
-    let window = windows.get_primary().unwrap();
+    let window = window_query.get_single().unwrap();
 
     if mouse_input.pressed(MouseButton::Left) {
         let pos = match window.cursor_position() {
